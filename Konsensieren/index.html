@@ -1,0 +1,790 @@
+<title>Team-Konsensieren</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: single centred working column; tabs on top; each step a quiet panel; the 0–10 scale is the one strong element */
+:root {
+  --bg: #f3f4f7;
+  --panel: #ffffff;
+  --fg: #1d2230;
+  --muted: #5c6477;
+  --line: #d9dce5;
+  --accent: #2f4fb8;
+  --accent-ink: #ffffff;
+  --accent-soft: #e4e9fa;
+  --ok: #1f7a4d;
+  --ok-soft: #e1f3ea;
+  --warn: #9a5b00;
+  --warn-soft: #fbefd9;
+  --bad: #b3261e;
+  --bad-soft: #fbe3e1;
+  --r0: #2e8b57; --r5: #c99a1a; --r10: #c0392b;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12151d; --panel: #1b1f2a; --fg: #e7e9f0; --muted: #9aa2b6; --line: #2e3443;
+  --accent: #8ea6ff; --accent-ink: #10142a; --accent-soft: #252d4a;
+  --ok: #6fd29f; --ok-soft: #173326; --warn: #f0b860; --warn-soft: #3a2c12; --bad: #ff8a80; --bad-soft: #3d1c1a;
+  --r0: #5cc48a; --r5: #e2b84a; --r10: #ef6b5c; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #12151d; --panel: #1b1f2a; --fg: #e7e9f0; --muted: #9aa2b6; --line: #2e3443;
+  --accent: #8ea6ff; --accent-ink: #10142a; --accent-soft: #252d4a;
+  --ok: #6fd29f; --ok-soft: #173326; --warn: #f0b860; --warn-soft: #3a2c12; --bad: #ff8a80; --bad-soft: #3d1c1a;
+  --r0: #5cc48a; --r5: #e2b84a; --r10: #ef6b5c; color-scheme: dark }
+
+body { background: var(--bg); color: var(--fg); font: 16px/1.5 var(--font-body); }
+.wrap { max-width: 860px; margin: 0 auto; padding-block: 28px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 22px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.15; }
+h1 { font-size: clamp(1.7rem, 4vw, 2.3rem); font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 1.3rem; font-weight: 700; }
+h3 { font-size: 1.05rem; font-weight: 500; }
+p { margin: 0; }
+.lead { color: var(--muted); max-width: 62ch; }
+.eyebrow { font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+header { display: grid; gap: 8px; }
+.names { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.names span { font-family: var(--font-display); font-weight: 500; padding: 2px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); font-size: .9rem; }
+
+nav { display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid var(--line); }
+nav button { font: 600 .95rem var(--font-body); color: var(--muted); background: none; border: 0; padding: 10px 14px; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -1px; }
+nav button[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); }
+nav button:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 20px; display: grid; gap: 14px; min-width: 0; }
+.stack { display: grid; gap: 22px; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.row > * { min-width: 0; }
+label.field { display: grid; gap: 4px; font-weight: 600; font-size: .9rem; }
+input[type="text"], input[type="number"], select, textarea {
+  font: 1rem var(--font-body); color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; max-width: 100%; }
+input.code { font-family: var(--font-mono); letter-spacing: .08em; text-transform: uppercase; width: 13ch; font-size: 1.1rem; }
+textarea { width: 100%; min-height: 140px; font-family: var(--font-mono); font-size: .85rem; box-sizing: border-box; }
+button.btn { font: 600 .95rem var(--font-body); border-radius: 6px; padding: 9px 16px; cursor: pointer; border: 1px solid var(--line); background: var(--panel); color: var(--fg); }
+button.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+button.btn.danger { color: var(--bad); border-color: var(--bad); }
+button.btn:disabled { opacity: .45; cursor: not-allowed; }
+.hint { color: var(--muted); font-size: .9rem; max-width: 70ch; }
+.msg { border-radius: 8px; padding: 10px 14px; font-size: .95rem; }
+.msg.ok { background: var(--ok-soft); color: var(--ok); }
+.msg.warn { background: var(--warn-soft); color: var(--warn); }
+.msg.bad { background: var(--bad-soft); color: var(--bad); }
+.msg.info { background: var(--accent-soft); color: var(--fg); }
+.pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: .8rem; font-weight: 600; letter-spacing: .03em; }
+.pill.setup { background: var(--warn-soft); color: var(--warn); }
+.pill.open { background: var(--ok-soft); color: var(--ok); }
+.pill.closed { background: var(--bad-soft); color: var(--bad); }
+.pill.published { background: var(--accent-soft); color: var(--accent); }
+
+/* The resistance scale */
+.scale-legend { display: flex; justify-content: space-between; font-size: .8rem; color: var(--muted); gap: 8px; }
+.rate { display: grid; gap: 6px; padding-block: 10px; border-top: 1px solid var(--line); }
+.rate:first-of-type { border-top: 0; }
+.rate-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.rate-head strong { font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; }
+.rate-head .val { font-family: var(--font-mono); font-size: .9rem; color: var(--muted); }
+.seg { display: grid; grid-template-columns: repeat(11, minmax(0, 1fr)); gap: 3px; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label { display: grid; place-items: center; height: 38px; border-radius: 5px; border: 1px solid var(--line); background: var(--bg);
+  font-family: var(--font-mono); font-size: .9rem; cursor: pointer; user-select: none; position: relative; }
+.seg label::after { content: ""; position: absolute; left: 3px; right: 3px; bottom: 3px; height: 3px; border-radius: 2px; background: var(--c); opacity: .55; }
+.seg input:checked + label { background: var(--c); border-color: var(--c); color: #fff; font-weight: 700; }
+.seg input:checked + label::after { opacity: 0; }
+.seg input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+.summary div { border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; background: var(--bg); }
+.summary b { display: block; font-family: var(--font-display); }
+.summary span { font-family: var(--font-mono); font-size: 1.2rem; }
+
+.result-card { text-align: center; padding: 26px 16px; border-radius: 10px; background: var(--accent-soft); display: grid; gap: 4px; }
+.result-card .who { font-family: var(--font-display); font-size: clamp(2rem, 7vw, 3rem); font-weight: 700; color: var(--accent); }
+
+.tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+table { border-collapse: collapse; width: 100%; font-size: .9rem; font-variant-numeric: tabular-nums; }
+th, td { padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); background: var(--bg); position: sticky; top: 0; }
+td.num, th.num { text-align: right; }
+td.mono { font-family: var(--font-mono); }
+td.hit { font-weight: 700; }
+tr:last-child td { border-bottom: 0; }
+
+.bars { display: grid; gap: 8px; }
+.bar { display: grid; grid-template-columns: 7.5em 1fr auto; gap: 10px; align-items: center; font-size: .9rem; }
+.bar .track { height: 10px; background: var(--bg); border-radius: 5px; overflow: hidden; border: 1px solid var(--line); }
+.bar .fill { height: 100%; background: var(--accent); }
+.bar .n { font-family: var(--font-mono); color: var(--muted); }
+
+.slips { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 6px; max-height: 320px; overflow: auto; }
+.slips div { font-family: var(--font-mono); text-align: center; padding: 8px 4px; border: 1px dashed var(--line); border-radius: 4px; background: var(--bg); font-size: .95rem; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: .95rem; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; font-variant-numeric: tabular-nums; }
+ol.steps { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; max-width: 70ch; }
+details summary { cursor: pointer; font-weight: 600; }
+@media (max-width: 520px) {
+  .seg label { height: 34px; font-size: .8rem; }
+  .bar { grid-template-columns: 6em 1fr auto; }
+}
+@media (prefers-reduced-motion: no-preference) { .fill { transition: width .4s ease; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Systemisches Konsensieren · Zuordnung</span>
+    <h1>Wem möchten Sie zugeordnet werden?</h1>
+    <p class="lead">Bewerten Sie für jede der fünf Personen, wie viel <b>Widerstand</b> Sie gegen eine Zuordnung zu ihr hätten: 0 heißt „passt mir gut“, 10 heißt „auf keinen Fall“. Die Auswertung ordnet alle so zu, dass möglichst wenig Widerstand entsteht und jede Person ungefähr gleich viele Mitarbeitende bekommt.</p>
+    <div class="names" id="names"></div>
+  </header>
+
+  <div id="conn" class="msg info">Verbindung zur Abstimmung wird hergestellt …</div>
+
+  <nav id="tabs" role="tablist"></nav>
+
+  <!-- ABSTIMMEN -->
+  <section id="tab-vote" class="stack" hidden>
+    <div id="vote-closed" class="msg warn" hidden></div>
+    <form id="vote-form" class="panel" novalidate>
+      <div class="row" style="justify-content: space-between">
+        <h2>Ihre Stimme</h2>
+        <span class="hint">Nur einmal pro Code möglich</span>
+      </div>
+      <label class="field" for="vote-code">Ihr persönlicher Code
+        <input id="vote-code" class="code" type="text" autocomplete="off" spellcheck="false" placeholder="XXXX-XXXX" maxlength="12">
+      </label>
+      <p class="hint">Der Code steht auf dem Zettel, den Sie gezogen haben. Niemand weiß, welcher Code zu Ihnen gehört. Heben Sie ihn auf: Mit ihm sehen Sie nach der Auswertung Ihre Zuordnung.</p>
+      <div>
+        <div class="scale-legend"><span>0 = kein Widerstand</span><span>5 = deutliche Bedenken</span><span>10 = maximaler Widerstand</span></div>
+        <div id="rates"></div>
+      </div>
+      <div id="vote-err" class="msg bad" hidden></div>
+      <div class="row"><button class="btn primary" id="vote-next" type="submit">Weiter zur Prüfung</button></div>
+    </form>
+    <div id="vote-confirm" class="panel" hidden>
+      <h2>Bitte prüfen</h2>
+      <p>Code <b id="confirm-code" style="font-family: var(--font-mono)"></b>. Ihre Angaben:</p>
+      <div class="summary" id="confirm-summary"></div>
+      <p class="hint">Nach dem Abgeben lässt sich die Stimme nicht mehr ändern.</p>
+      <div id="confirm-err" class="msg bad" hidden></div>
+      <div class="row">
+        <button class="btn primary" id="confirm-send" type="button">Endgültig abgeben</button>
+        <button class="btn" id="confirm-back" type="button">Zurück</button>
+      </div>
+    </div>
+    <div id="vote-done" class="panel" hidden>
+      <div class="msg ok">Ihre Stimme ist gespeichert. Vielen Dank!</div>
+      <p>Bewahren Sie Ihren Code <b id="done-code" style="font-family: var(--font-mono)"></b> auf. Sobald die Auswertung veröffentlicht ist, sehen Sie unter „Mein Ergebnis“ Ihre Zuordnung.</p>
+      <div class="row"><button class="btn" id="done-again" type="button">Weitere Stimme mit anderem Code abgeben</button></div>
+    </div>
+  </section>
+
+  <!-- ERGEBNIS -->
+  <section id="tab-result" class="stack" hidden>
+    <form id="lookup-form" class="panel" novalidate>
+      <h2>Mein Ergebnis</h2>
+      <div class="row">
+        <input id="lookup-code" class="code" type="text" autocomplete="off" spellcheck="false" placeholder="XXXX-XXXX" maxlength="12" aria-label="Ihr Code">
+        <button class="btn primary" type="submit">Zuordnung anzeigen</button>
+      </div>
+      <div id="lookup-out"></div>
+    </form>
+    <div id="public-stats" class="panel" hidden></div>
+  </section>
+
+  <!-- VERWALTUNG -->
+  <section id="tab-admin" class="stack" hidden>
+    <div class="panel">
+      <div class="row" style="justify-content: space-between">
+        <h2>Ablauf</h2>
+        <span id="phase-pill" class="pill setup">Vorbereitung</span>
+      </div>
+      <dl class="kv">
+        <dt>Ausgegebene Codes</dt><dd id="stat-codes">0</dd>
+        <dt>Abgegebene Stimmen</dt><dd id="stat-votes">0</dd>
+      </dl>
+      <div class="row" id="phase-buttons"></div>
+      <ol class="steps hint">
+        <li>Codes erzeugen, als Zettel ausdrucken, einzeln falten und in eine Box legen.</li>
+        <li>Jede Person zieht einen Zettel. So weiß niemand, welcher Code wem gehört.</li>
+        <li>Abstimmung starten und den Link zu dieser Seite teilen (Freigabe „Mitwirkende“).</li>
+        <li>Abstimmung beenden, Zuordnung berechnen, Ergebnis veröffentlichen.</li>
+      </ol>
+    </div>
+
+    <div class="panel">
+      <h2>Codes</h2>
+      <div class="row">
+        <label class="field" for="gen-n">Anzahl neuer Codes
+          <input id="gen-n" type="number" min="1" max="500" value="25" style="width: 8ch">
+        </label>
+        <button class="btn primary" id="gen-btn" type="button" style="align-self: end">Codes erzeugen</button>
+      </div>
+      <p class="hint">Erzeugen Sie ein paar Codes mehr als Teilnehmende. Nicht gezogene Codes stören die Auswertung nicht.</p>
+      <div id="gen-msg"></div>
+      <div id="slips" class="slips"></div>
+      <div class="row" id="slip-actions" hidden>
+        <button class="btn" id="slip-save" type="button">Zettel zum Drucken speichern</button>
+        <button class="btn" id="slip-copy" type="button">Codes kopieren</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Auswertung</h2>
+      <div class="row">
+        <label class="field" for="method">Verfahren
+          <select id="method">
+            <option value="fair">Ausgewogen: hohe Einzelwiderstände vermeiden (empfohlen)</option>
+            <option value="sum">Klassisch: Summe aller Widerstände minimieren</option>
+          </select>
+        </label>
+        <button class="btn primary" id="calc-btn" type="button" style="align-self: end">Zuordnung berechnen</button>
+      </div>
+      <div id="calc-out" class="stack"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Zurücksetzen</h2>
+      <p class="hint">Löscht alle Codes, Stimmen und Ergebnisse. Das lässt sich nicht rückgängig machen.</p>
+      <div class="row" id="reset-row"><button class="btn danger" id="reset-btn" type="button">Alles löschen …</button></div>
+    </div>
+  </section>
+
+  <!-- DATEI-AUSWERTUNG -->
+  <section id="tab-file" class="stack" hidden>
+    <div class="panel">
+      <h2>Auswertung aus Datei</h2>
+      <p class="hint">Für Stimmen, die Sie anders gesammelt haben, zum Beispiel mit Microsoft Forms. Exportieren Sie die Antworten nach Excel und kopieren Sie die Spalten <b>Code</b> und die fünf Namen samt Kopfzeile hier hinein, oder laden Sie eine CSV-Datei.</p>
+      <textarea id="file-text" spellcheck="false" placeholder="Code;Rupprecht;Schön;Glaser;Ohland;Ertel&#10;K7QM-2XHD;0;3;8;2;5"></textarea>
+      <div class="row">
+        <input id="file-input" type="file" accept=".csv,.txt,text/csv,text/plain" aria-label="CSV-Datei laden">
+        <button class="btn" id="file-sample" type="button">Beispieldaten laden</button>
+      </div>
+      <div class="row">
+        <label class="field" for="file-method">Verfahren
+          <select id="file-method">
+            <option value="fair">Ausgewogen: hohe Einzelwiderstände vermeiden (empfohlen)</option>
+            <option value="sum">Klassisch: Summe aller Widerstände minimieren</option>
+          </select>
+        </label>
+        <button class="btn primary" id="file-calc" type="button" style="align-self: end">Zuordnung berechnen</button>
+      </div>
+      <div id="file-out" class="stack"></div>
+    </div>
+    <div class="panel">
+      <h2>Code-Zettel ohne Datenbank</h2>
+      <p class="hint">Erzeugt zufällige Codes, die Teilnehmende in ein Formular eintragen. Diese Codes werden nirgends gespeichert.</p>
+      <div class="row">
+        <input id="local-n" type="number" min="1" max="500" value="25" style="width: 8ch" aria-label="Anzahl Codes">
+        <button class="btn" id="local-gen" type="button">Codes erzeugen</button>
+      </div>
+      <div id="local-slips" class="slips"></div>
+      <div class="row" id="local-actions" hidden>
+        <button class="btn" id="local-save" type="button">Zettel zum Drucken speichern</button>
+        <button class="btn" id="local-copy" type="button">Codes kopieren</button>
+      </div>
+      <details>
+        <summary>So richten Sie Microsoft Forms dafür ein</summary>
+        <ol class="steps hint" style="margin-top: 8px">
+          <li>Frage 1: Text „Ihr Code“ (Pflicht).</li>
+          <li>Fragen 2–6: je eine Bewertung oder Zahl 0–10 für Rupprecht, Schön, Glaser, Ohland, Ertel (Pflicht).</li>
+          <li>Einstellungen: „Nur Personen in meiner Organisation“, „Namen aufzeichnen“ <b>aus</b>, „Eine Antwort pro Person“ <b>an</b>.</li>
+          <li>Nach Ende: Antworten in Excel öffnen, Spalten Code und die fünf Namen hier einfügen.</li>
+        </ol>
+      </details>
+    </div>
+  </section>
+
+  <p class="hint" id="footnote">Anonymität: Gespeichert werden keine Namen, nur der verschlüsselte Code und die fünf Werte. Wer welchen Code hat, weiß niemand, weil die Zettel verlost werden.</p>
+</div>
+
+<script>
+"use strict";
+const PERSONS = ["Rupprecht", "Schön", "Glaser", "Ohland", "Ertel"];
+const SALT = "team-konsensieren-v1|";
+const ALPH = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // ohne I, O, 0, 1
+const PHASE_LABEL = { setup: "Vorbereitung", open: "Abstimmung läuft", closed: "Abstimmung beendet", published: "Ergebnis veröffentlicht" };
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+function show(el, html, cls) { el.className = "msg " + cls; el.innerHTML = html; el.hidden = false; }
+
+/* ---------- Codes ---------- */
+function newCode() {
+  const b = new Uint8Array(8); crypto.getRandomValues(b);
+  let s = ""; for (let i = 0; i < 8; i++) s += ALPH[b[i] & 31];
+  return s.slice(0, 4) + "-" + s.slice(4);
+}
+function normCode(raw) {
+  const s = String(raw || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  return s.length === 8 ? s.slice(0, 4) + "-" + s.slice(4) : s;
+}
+const validCodeFormat = (c) => /^[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(c);
+
+function sha256Fallback(str) {
+  const K = [0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+  const bytes = Array.from(new TextEncoder().encode(str));
+  const bitLen = bytes.length * 8;
+  bytes.push(0x80); while (bytes.length % 64 !== 56) bytes.push(0);
+  for (let i = 7; i >= 0; i--) bytes.push(Math.floor(bitLen / Math.pow(2, i * 8)) & 255);
+  let h = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  const rotr = (x, n) => (x >>> n) | (x << (32 - n));
+  for (let o = 0; o < bytes.length; o += 64) {
+    const w = new Array(64);
+    for (let i = 0; i < 16; i++) w[i] = (bytes[o+4*i] << 24) | (bytes[o+4*i+1] << 16) | (bytes[o+4*i+2] << 8) | bytes[o+4*i+3];
+    for (let i = 16; i < 64; i++) {
+      const s0 = rotr(w[i-15], 7) ^ rotr(w[i-15], 18) ^ (w[i-15] >>> 3);
+      const s1 = rotr(w[i-2], 17) ^ rotr(w[i-2], 19) ^ (w[i-2] >>> 10);
+      w[i] = (w[i-16] + s0 + w[i-7] + s1) | 0;
+    }
+    let [a, b, c, d, e, f, g, hh] = h;
+    for (let i = 0; i < 64; i++) {
+      const t1 = (hh + (rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25)) + ((e & f) ^ (~e & g)) + K[i] + w[i]) | 0;
+      const t2 = ((rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22)) + ((a & b) ^ (a & c) ^ (b & c))) | 0;
+      hh = g; g = f; f = e; e = (d + t1) | 0; d = c; c = b; b = a; a = (t1 + t2) | 0;
+    }
+    h = h.map((v, i) => (v + [a, b, c, d, e, f, g, hh][i]) | 0);
+  }
+  return h.map((v) => (v >>> 0).toString(16).padStart(8, "0")).join("");
+}
+async function hashCode(code) {
+  const str = SALT + code;
+  try {
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf), (b) => b.toString(16).padStart(2, "0")).join("");
+  } catch (e) { return sha256Fallback(str); }
+}
+
+/* ---------- Zuordnung: Hungarian-Methode mit gleichmäßigen Kapazitäten ---------- */
+function hungarian(a) {
+  const n = a.length, m = a[0].length;
+  const u = new Float64Array(n + 1), v = new Float64Array(m + 1), p = new Int32Array(m + 1), way = new Int32Array(m + 1);
+  for (let i = 1; i <= n; i++) {
+    p[0] = i; let j0 = 0;
+    const minv = new Float64Array(m + 1).fill(Infinity), used = new Uint8Array(m + 1);
+    do {
+      used[j0] = 1; const i0 = p[j0]; let delta = Infinity, j1 = 0;
+      for (let j = 1; j <= m; j++) if (!used[j]) {
+        const cur = a[i0 - 1][j - 1] - u[i0] - v[j];
+        if (cur < minv[j]) { minv[j] = cur; way[j] = j0; }
+        if (minv[j] < delta) { delta = minv[j]; j1 = j; }
+      }
+      for (let j = 0; j <= m; j++) { if (used[j]) { u[p[j]] += delta; v[j] -= delta; } else minv[j] -= delta; }
+      j0 = j1;
+    } while (p[j0] !== 0);
+    do { const j1 = way[j0]; p[j0] = p[j1]; j0 = j1; } while (j0);
+  }
+  const ans = new Int32Array(n);
+  for (let j = 1; j <= m; j++) if (p[j]) ans[p[j] - 1] = j - 1;
+  return ans;
+}
+function tie(key, p) { // deterministischer Zufall: entscheidet nur bei exakt gleichem Widerstand
+  let h = 2166136261;
+  const s = key + "|" + p;
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return (h >>> 0) % 1000;
+}
+/* entries: [{key, r:[5 Werte 0..10]}] → [{key, p, r}] ; jede Person bekommt ⌊n/5⌋ oder ⌈n/5⌉ */
+function assign(entries, method) {
+  const n = entries.length, k = PERSONS.length;
+  if (!n) return [];
+  const q = Math.floor(n / k), rem = n % k;
+  const per = rem ? q + 1 : q;
+  const slots = [];
+  for (let p = 0; p < k; p++) for (let s = 0; s < per; s++) slots.push({ p, extra: rem > 0 && s === per - 1 });
+  const M = 1000 * (n + 1), BIG = 1e13;
+  const cost = (r) => (method === "sum" ? r : r * r) * M;
+  const rows = entries.map((e) => slots.map((sl) => cost(e.r[sl.p]) + tie(e.key, sl.p)));
+  // Platzhalter belegen die überzähligen Plätze, damit niemand mehr als ⌈n/5⌉ und niemand weniger als ⌊n/5⌋ bekommt
+  for (let d = 0; d < slots.length - n; d++) rows.push(slots.map((sl) => (sl.extra ? 0 : BIG)));
+  const res = hungarian(rows);
+  return entries.map((e, i) => { const p = slots[res[i]].p; return { key: e.key, p, r: e.r[p] }; });
+}
+function statsOf(entries, result) {
+  const k = PERSONS.length;
+  const per = PERSONS.map((name, p) => ({ name, n: 0, sumR: 0, group: 0 }));
+  entries.forEach((e) => e.r.forEach((r, p) => (per[p].group += r)));
+  let total = 0, best = 0, zero = 0, high = 0, maxR = 0;
+  result.forEach((x, i) => {
+    per[x.p].n++; per[x.p].sumR += x.r; total += x.r;
+    if (x.r === Math.min(...entries[i].r)) best++;
+    if (x.r === 0) zero++;
+    if (x.r >= 7) high++;
+    maxR = Math.max(maxR, x.r);
+  });
+  return { per, total, best, zero, high, maxR, n: result.length, avg: result.length ? total / result.length : 0, k };
+}
+function statsHTML(st, withGroup) {
+  const maxN = Math.max(1, ...st.per.map((p) => p.n));
+  const bars = st.per.map((p) => `<div class="bar"><b>${esc(p.name)}</b><div class="track"><div class="fill" style="width:${(100 * p.n / maxN).toFixed(1)}%"></div></div><span class="n">${p.n} · Ø ${p.n ? (p.sumR / p.n).toFixed(1) : "–"}</span></div>`).join("");
+  const group = withGroup ? `<details><summary>Gruppenwiderstand je Person (klassisches Konsensieren)</summary>
+    <div class="tbl-wrap" style="margin-top:8px"><table><thead><tr><th>Person</th><th class="num">Summe Widerstand</th><th class="num">Ø</th></tr></thead><tbody>
+    ${st.per.slice().sort((a, b) => a.group - b.group).map((p) => `<tr><td>${esc(p.name)}</td><td class="num">${p.group}</td><td class="num">${(p.group / Math.max(1, st.n)).toFixed(1)}</td></tr>`).join("")}
+    </tbody></table></div></details>` : "";
+  return `<div class="summary">
+      <div><b>Teilnehmende</b><span>${st.n}</span></div>
+      <div><b>Ø Widerstand</b><span>${st.avg.toFixed(2)}</span></div>
+      <div><b>Wunschzuordnung</b><span>${st.best} / ${st.n}</span></div>
+      <div><b>Höchster Wert</b><span>${st.maxR}</span></div>
+    </div>
+    <p class="hint">„Wunschzuordnung“ zählt alle, die bei einer ihrer Personen mit dem niedrigsten eigenen Widerstand gelandet sind. ${st.high ? `${st.high} Person(en) haben einen Widerstand von 7 oder mehr.` : "Niemand hat einen Widerstand von 7 oder mehr."}</p>
+    <div class="bars">${bars}</div>${group}`;
+}
+function resultTable(entries, result, label) {
+  const rows = result.map((x, i) => ({ x, e: entries[i] })).sort((a, b) => a.x.p - b.x.p || String(label(a.e)).localeCompare(String(label(b.e))));
+  return `<div class="tbl-wrap" style="max-height:420px"><table><thead><tr><th>Code</th><th>Zuordnung</th>${PERSONS.map((p) => `<th class="num">${esc(p)}</th>`).join("")}</tr></thead><tbody>
+    ${rows.map(({ x, e }) => `<tr><td class="mono">${esc(label(e))}</td><td><b>${esc(PERSONS[x.p])}</b></td>${e.r.map((r, p) => `<td class="num${p === x.p ? " hit" : ""}">${r}</td>`).join("")}</tr>`).join("")}
+  </tbody></table></div>`;
+}
+function resultCSV(entries, result, label) {
+  const lines = ["Code;Zuordnung;Widerstand;" + PERSONS.join(";")];
+  result.forEach((x, i) => lines.push([label(entries[i]), PERSONS[x.p], x.r, ...entries[i].r].join(";")));
+  return "﻿" + lines.join("\r\n");
+}
+
+/* ---------- Speichern / Kopieren ---------- */
+let dl = null, inViewer = false;
+async function saveFile(filename, data, mime, msgEl) {
+  if (dl) {
+    try { await dl.save({ filename, data }); } catch (e) { if (msgEl) show(msgEl, "Speichern war nicht möglich (" + esc(e.code || e.message || e) + ").", "warn"); }
+    return;
+  }
+  if (!inViewer) { // lokal im Browser geöffnet
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([data], { type: mime })); a.download = filename; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    return;
+  }
+  if (msgEl) show(msgEl, "Speichern ist in dieser Ansicht nicht verfügbar. Nutzen Sie „Codes kopieren“.", "warn");
+}
+async function copyText(text, btn) {
+  try { await navigator.clipboard.writeText(text); const t = btn.textContent; btn.textContent = "Kopiert"; setTimeout(() => (btn.textContent = t), 1500); }
+  catch (e) {
+    const ta = document.createElement("textarea"); ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); btn.textContent = "Kopiert"; } catch (_) {} ta.remove();
+  }
+}
+function slipsDocument(codes) {
+  return `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>Code-Zettel</title><style>
+  body{font-family:Segoe UI,Arial,sans-serif;margin:12mm}
+  .g{display:grid;grid-template-columns:repeat(4,1fr);gap:0}
+  .s{border:1px dashed #888;padding:7mm 3mm;text-align:center;break-inside:avoid}
+  .c{font:700 18pt Consolas,monospace;letter-spacing:2px}.t{font-size:8pt;color:#555;margin-top:2mm}
+  </style></head><body><div class="g">${codes.map((c) => `<div class="s"><div class="c">${c}</div><div class="t">Persönlicher Code · gut aufbewahren</div></div>`).join("")}</div></body></html>`;
+}
+const slipsHTML = (codes) => codes.map((c) => `<div>${esc(c)}</div>`).join("");
+
+/* ---------- Grundgerüst ---------- */
+$("names").innerHTML = PERSONS.map((p) => `<span>${esc(p)}</span>`).join("");
+function scaleColor(v) { return v <= 5 ? `color-mix(in srgb, var(--r5) ${v * 20}%, var(--r0))` : `color-mix(in srgb, var(--r10) ${(v - 5) * 20}%, var(--r5))`; }
+$("rates").innerHTML = PERSONS.map((p, i) => `<fieldset class="rate" style="border:0;margin:0;padding-inline:0">
+  <legend class="rate-head" style="width:100%;padding:0"><strong>${esc(p)}</strong> <span class="val" id="val-${i}">noch offen</span></legend>
+  <div class="seg">${Array.from({ length: 11 }, (_, v) => `<input type="radio" id="r-${i}-${v}" name="r-${i}" value="${v}"><label for="r-${i}-${v}" style="--c:${scaleColor(v)}">${v}</label>`).join("")}</div>
+</fieldset>`).join("");
+PERSONS.forEach((_, i) => document.querySelectorAll(`input[name="r-${i}"]`).forEach((el) => el.addEventListener("change", () => ($("val-" + i).textContent = "Widerstand " + el.value))));
+
+let tabs = [];
+function setTabs(list) {
+  tabs = list;
+  $("tabs").innerHTML = list.map(([id, label]) => `<button role="tab" type="button" data-tab="${id}" aria-selected="false">${label}</button>`).join("");
+  $("tabs").querySelectorAll("button").forEach((b) => b.addEventListener("click", () => openTab(b.dataset.tab)));
+  let want = null; try { want = localStorage.getItem("tk-tab"); } catch (e) {}
+  if (location.hash && list.some(([id]) => id === location.hash.slice(1))) want = location.hash.slice(1);
+  openTab(list.some(([id]) => id === want) ? want : list[0][0]);
+}
+function openTab(id) {
+  ["vote", "result", "admin", "file"].forEach((t) => ($("tab-" + t).hidden = t !== id));
+  $("tabs").querySelectorAll("button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === id)));
+  try { localStorage.setItem("tk-tab", id); } catch (e) {}
+}
+
+/* ---------- Datei-Auswertung (funktioniert immer, auch ohne Datenbank) ---------- */
+function parseTable(text) {
+  const lines = text.replace(/\r/g, "").split("\n").filter((l) => l.trim());
+  if (!lines.length) return { rows: [] };
+  const first = lines[0];
+  const delim = ["\t", ";", ","].map((d) => [d, first.split(d).length]).sort((a, b) => b[1] - a[1])[0][0];
+  const split = (line) => {
+    const out = []; let cur = "", q = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (q) { if (c === '"' && line[i + 1] === '"') { cur += '"'; i++; } else if (c === '"') q = false; else cur += c; }
+      else if (c === '"') q = true; else if (c === delim) { out.push(cur.trim()); cur = ""; } else cur += c;
+    }
+    out.push(cur.trim()); return out;
+  };
+  return { header: split(first), rows: lines.slice(1).map(split) };
+}
+const fold = (s) => String(s).toLowerCase().replace(/ö/g, "oe").replace(/ä/g, "ae").replace(/ü/g, "ue").replace(/ß/g, "ss");
+function readEntries(text) {
+  const { header, rows } = parseTable(text);
+  if (!header) throw new Error("Keine Daten gefunden.");
+  const fh = header.map(fold);
+  const pcol = PERSONS.map((p) => fh.findIndex((h) => h.includes(fold(p))));
+  const missing = PERSONS.filter((p, i) => pcol[i] < 0);
+  if (missing.length) throw new Error("Spalte(n) nicht gefunden: " + missing.join(", ") + ". Die Kopfzeile muss die fünf Namen enthalten.");
+  const ccol = fh.findIndex((h) => /code|kennung|pseudonym|kennwort/.test(h));
+  const entries = [], problems = [], seen = new Set();
+  rows.forEach((row, idx) => {
+    const line = idx + 2;
+    const code = ccol >= 0 ? normCode(row[ccol]) : "Zeile " + line;
+    const r = pcol.map((c) => { const m = String(row[c] ?? "").match(/-?\d+(?:[.,]\d+)?/); return m ? Math.round(parseFloat(m[0].replace(",", "."))) : NaN; });
+    if (r.some((v) => !(v >= 0 && v <= 10))) { problems.push(`Zeile ${line}: Werte müssen zwischen 0 und 10 liegen.`); return; }
+    if (!code) { problems.push(`Zeile ${line}: kein Code.`); return; }
+    if (seen.has(code)) { problems.push(`Zeile ${line}: Code ${code} kommt doppelt vor, nur die erste Stimme zählt.`); return; }
+    seen.add(code); entries.push({ key: code, code, r });
+  });
+  return { entries, problems };
+}
+let fileLast = null;
+function runFile() {
+  const out = $("file-out");
+  try {
+    const { entries, problems } = readEntries($("file-text").value);
+    if (!entries.length) throw new Error("Keine gültigen Stimmen gefunden.");
+    const result = assign(entries, $("file-method").value);
+    fileLast = { entries, result };
+    const st = statsOf(entries, result);
+    out.innerHTML = (problems.length ? `<div class="msg warn">${problems.map(esc).join("<br>")}</div>` : "") +
+      statsHTML(st, true) + resultTable(entries, result, (e) => e.code) +
+      `<div class="row"><button class="btn" id="file-save" type="button">Ergebnis als CSV speichern</button><button class="btn" id="file-copy" type="button">Ergebnis kopieren</button></div><div id="file-msg" hidden></div>`;
+    const label = (e) => e.code;
+    $("file-save").onclick = () => saveFile("zuordnung.csv", resultCSV(entries, result, label), "text/csv", $("file-msg"));
+    $("file-copy").onclick = (ev) => copyText(resultCSV(entries, result, label).replace(/^﻿/, "").replace(/;/g, "\t"), ev.currentTarget);
+  } catch (e) { out.innerHTML = `<div class="msg bad">${esc(e.message)}</div>`; }
+}
+$("file-calc").addEventListener("click", runFile);
+$("file-sample").addEventListener("click", () => {
+  // Beispieldaten: zufällige, plausible Werte – keine echten Stimmen
+  const lines = ["Code;" + PERSONS.join(";")];
+  for (let i = 0; i < 23; i++) {
+    const fav = Math.floor(Math.random() * 5);
+    lines.push([newCode(), ...PERSONS.map((_, p) => (p === fav ? Math.floor(Math.random() * 2) : Math.min(10, Math.floor(Math.random() * 11))))].join(";"));
+  }
+  $("file-text").value = lines.join("\n");
+  runFile();
+});
+$("file-input").addEventListener("change", (ev) => {
+  const f = ev.target.files[0]; if (!f) return;
+  const rd = new FileReader();
+  rd.onload = () => { let t = String(rd.result); if (/\uFFFD/.test(t)) { const r2 = new FileReader(); r2.onload = () => { $("file-text").value = r2.result; runFile(); }; r2.readAsText(f, "windows-1252"); return; } $("file-text").value = t; runFile(); };
+  rd.readAsText(f, "utf-8");
+});
+let localCodes = [];
+$("local-gen").addEventListener("click", () => {
+  const n = Math.max(1, Math.min(500, parseInt($("local-n").value, 10) || 0));
+  const set = new Set(); while (set.size < n) set.add(newCode());
+  localCodes = [...set];
+  $("local-slips").innerHTML = slipsHTML(localCodes); $("local-actions").hidden = false;
+});
+$("local-save").addEventListener("click", () => saveFile("code-zettel.html", slipsDocument(localCodes), "text/html"));
+$("local-copy").addEventListener("click", (ev) => copyText(localCodes.join("\n"), ev.currentTarget));
+
+/* ---------- Live-Abstimmung mit gemeinsamer Datenbank ---------- */
+let db = null, user = null, isAdmin = false;
+let phase = "setup", validHashes = new Set(), adminCodes = [], votes = new Map(), published = null, preview = null;
+
+function renderPhase() {
+  const voting = phase === "open";
+  if (!voting) $("vote-confirm").hidden = true;
+  $("vote-form").hidden = !voting || !$("vote-done").hidden || !$("vote-confirm").hidden;
+  if (!voting) {
+    const txt = { setup: "Die Abstimmung hat noch nicht begonnen.", closed: "Die Abstimmung ist beendet. Die Auswertung folgt.", published: "Die Abstimmung ist beendet. Ihre Zuordnung sehen Sie unter „Mein Ergebnis“." }[phase];
+    show($("vote-closed"), txt, phase === "published" ? "info" : "warn");
+  } else $("vote-closed").hidden = true;
+  if (isAdmin) renderAdmin();
+  renderPublicStats();
+}
+function renderPublicStats() {
+  const el = $("public-stats");
+  if (phase !== "published" || !published) { el.hidden = true; return; }
+  const counts = PERSONS.map((p) => 0);
+  Object.values(published.assign || {}).forEach((x) => counts[x.p]++);
+  const maxN = Math.max(1, ...counts);
+  el.innerHTML = `<h3>Verteilung</h3><div class="bars">${PERSONS.map((p, i) => `<div class="bar"><b>${esc(p)}</b><div class="track"><div class="fill" style="width:${(100 * counts[i] / maxN).toFixed(1)}%"></div></div><span class="n">${counts[i]}</span></div>`).join("")}</div>`;
+  el.hidden = false;
+}
+
+// Abstimmen
+let pending = null;
+$("vote-form").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  const err = $("vote-err"); err.hidden = true;
+  const code = normCode($("vote-code").value);
+  if (!validCodeFormat(code)) return show(err, "Bitte geben Sie Ihren Code im Format XXXX-XXXX ein.", "bad");
+  const r = PERSONS.map((_, i) => { const el = document.querySelector(`input[name="r-${i}"]:checked`); return el ? +el.value : null; });
+  const open = PERSONS.filter((_, i) => r[i] === null);
+  if (open.length) return show(err, "Bitte bewerten Sie noch: " + open.map(esc).join(", ") + ".", "bad");
+  const h = await hashCode(code);
+  if (!validHashes.has(h)) return show(err, "Diesen Code gibt es nicht. Prüfen Sie die Schreibweise.", "bad");
+  pending = { code, h, r };
+  $("confirm-code").textContent = code;
+  $("confirm-summary").innerHTML = PERSONS.map((p, i) => `<div><b>${esc(p)}</b><span>${r[i]}</span></div>`).join("");
+  $("confirm-err").hidden = true;
+  $("vote-form").hidden = true; $("vote-confirm").hidden = false;
+});
+$("confirm-back").addEventListener("click", () => { $("vote-confirm").hidden = true; $("vote-form").hidden = false; });
+$("confirm-send").addEventListener("click", async () => {
+  const btn = $("confirm-send"), err = $("confirm-err");
+  if (!pending) return;
+  btn.disabled = true; err.hidden = true;
+  try {
+    if (phase !== "open") throw new Error("Die Abstimmung ist nicht mehr geöffnet.");
+    const ref = db.doc("votes/" + pending.h);
+    const lease = await ref.acquire({ holder: newCode(), ttlMs: 8000 });
+    if (!lease.acquired) throw new Error("Mit diesem Code wird gerade schon abgestimmt.");
+    const snap = await ref.get();
+    if (snap.exists && snap.data().r) throw new Error("Mit diesem Code wurde bereits abgestimmt. Jeder Code gilt nur einmal.");
+    await ref.set({ r: pending.r });
+    $("done-code").textContent = pending.code;
+    $("vote-confirm").hidden = true; $("vote-done").hidden = false;
+    $("vote-form").reset(); PERSONS.forEach((_, i) => ($("val-" + i).textContent = "noch offen"));
+    pending = null;
+  } catch (e) {
+    const m = e.code === "invalid_argument" ? "Sie haben keine Berechtigung zum Abstimmen. Bitten Sie um Freigabe als „Mitwirkende/r“." : (e.message || String(e));
+    show(err, esc(m), "bad");
+  } finally { btn.disabled = false; }
+});
+$("done-again").addEventListener("click", () => { $("vote-done").hidden = true; renderPhase(); });
+
+// Ergebnis nachschlagen
+$("lookup-form").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  const out = $("lookup-out");
+  const code = normCode($("lookup-code").value);
+  if (!validCodeFormat(code)) { out.innerHTML = `<div class="msg bad">Bitte geben Sie Ihren Code im Format XXXX-XXXX ein.</div>`; return; }
+  if (phase !== "published" || !published) { out.innerHTML = `<div class="msg warn">Das Ergebnis ist noch nicht veröffentlicht. Schauen Sie später noch einmal vorbei.</div>`; return; }
+  const h = await hashCode(code);
+  const x = published.assign && published.assign[h];
+  if (!x) { out.innerHTML = `<div class="msg bad">Zu diesem Code gibt es keine Zuordnung. Entweder ist er falsch geschrieben, oder damit wurde nicht abgestimmt.</div>`; return; }
+  out.innerHTML = `<div class="result-card"><span class="eyebrow">Ihre Zuordnung</span><span class="who">${esc(PERSONS[x.p])}</span><span class="hint">Ihr angegebener Widerstand: ${x.r} von 10</span></div>`;
+});
+
+// Verwaltung
+function renderAdmin() {
+  const pill = $("phase-pill"); pill.className = "pill " + phase; pill.textContent = PHASE_LABEL[phase];
+  $("stat-codes").textContent = validHashes.size;
+  const counted = [...votes.keys()].filter((h) => validHashes.has(h)).length;
+  $("stat-votes").textContent = counted + (validHashes.size ? ` von ${validHashes.size}` : "");
+  const btns = {
+    setup: [["Abstimmung starten", "open", "primary", validHashes.size === 0]],
+    open: [["Abstimmung beenden", "closed", "primary"]],
+    closed: [["Wieder öffnen", "open", ""]],
+    published: [["Veröffentlichung zurückziehen", "closed", ""]],
+  }[phase];
+  $("phase-buttons").innerHTML = btns.map(([l, to, cls, dis]) => `<button class="btn ${cls}" type="button" data-to="${to}" ${dis ? "disabled" : ""}>${l}</button>`).join("") +
+    (phase === "setup" && !validHashes.size ? `<span class="hint">Erst Codes erzeugen.</span>` : "");
+  $("phase-buttons").querySelectorAll("button").forEach((b) => b.addEventListener("click", () => setPhase(b.dataset.to)));
+  $("slips").innerHTML = slipsHTML(adminCodes);
+  $("slip-actions").hidden = !adminCodes.length;
+  $("calc-btn").disabled = counted === 0;
+}
+async function setPhase(to) {
+  try { await db.doc("config/main").set({ phase: to }); }
+  catch (e) { show($("gen-msg"), "Änderung nicht möglich: " + esc(e.message || e.code), "bad"); }
+}
+$("gen-btn").addEventListener("click", async () => {
+  const n = Math.max(1, Math.min(500, parseInt($("gen-n").value, 10) || 0));
+  const btn = $("gen-btn"); btn.disabled = true;
+  try {
+    const all = new Set(adminCodes); const fresh = [];
+    while (fresh.length < n) { const c = newCode(); if (!all.has(c)) { all.add(c); fresh.push(c); } }
+    const codes = adminCodes.concat(fresh);
+    const hashes = await Promise.all(codes.map(hashCode));
+    await db.doc("admin/codes").set({ list: codes });
+    await db.doc("config/codes").set({ hashes });
+    show($("gen-msg"), `${n} neue Codes erzeugt. Insgesamt ${codes.length}.`, "ok");
+  } catch (e) { show($("gen-msg"), "Codes konnten nicht gespeichert werden: " + esc(e.message || e.code), "bad"); }
+  finally { btn.disabled = false; }
+});
+$("slip-save").addEventListener("click", () => saveFile("code-zettel.html", slipsDocument(adminCodes), "text/html", $("gen-msg")));
+$("slip-copy").addEventListener("click", (ev) => copyText(adminCodes.join("\n"), ev.currentTarget));
+
+$("calc-btn").addEventListener("click", async () => {
+  const out = $("calc-out");
+  const codeOf = new Map(await Promise.all(adminCodes.map(async (c) => [await hashCode(c), c])));
+  const entries = [];
+  votes.forEach((v, h) => {
+    if (!validHashes.has(h) || !Array.isArray(v.r) || v.r.length !== PERSONS.length) return;
+    const r = v.r.map((x) => Math.max(0, Math.min(10, Math.round(+x))));
+    if (r.some((x) => Number.isNaN(x))) return;
+    entries.push({ key: h, h, code: codeOf.get(h) || h.slice(0, 8), r });
+  });
+  if (!entries.length) { out.innerHTML = `<div class="msg warn">Noch keine Stimmen.</div>`; return; }
+  const method = $("method").value;
+  const result = assign(entries, method);
+  preview = { entries, result, method };
+  const label = (e) => e.code;
+  out.innerHTML = (phase === "open" ? `<div class="msg warn">Die Abstimmung läuft noch. Beenden Sie sie vor dem Veröffentlichen.</div>` : "") +
+    statsHTML(statsOf(entries, result), true) + resultTable(entries, result, label) +
+    `<div class="row"><button class="btn primary" id="pub-btn" type="button" ${phase === "open" ? "disabled" : ""}>Ergebnis veröffentlichen</button>
+     <button class="btn" id="calc-save" type="button">Liste als CSV speichern</button><button class="btn" id="calc-copy" type="button">Liste kopieren</button></div><div id="calc-msg" hidden></div>`;
+  $("calc-save").onclick = () => saveFile("zuordnung.csv", resultCSV(entries, result, label), "text/csv", $("calc-msg"));
+  $("calc-copy").onclick = (ev) => copyText(resultCSV(entries, result, label).replace(/^﻿/, "").replace(/;/g, "\t"), ev.currentTarget);
+  $("pub-btn").onclick = async () => {
+    try {
+      const map = {}; result.forEach((x, i) => (map[entries[i].h] = { p: x.p, r: x.r }));
+      await db.doc("results/current").set({ assign: map, method });
+      await db.doc("config/main").set({ phase: "published" });
+      show($("calc-msg"), "Veröffentlicht. Alle können jetzt mit ihrem Code unter „Mein Ergebnis“ nachsehen.", "ok");
+    } catch (e) { show($("calc-msg"), "Veröffentlichen fehlgeschlagen: " + esc(e.message || e.code), "bad"); }
+  };
+});
+
+function askReset() {
+  const row = $("reset-row");
+  const restore = () => { row.innerHTML = `<button class="btn danger" id="reset-btn" type="button">Alles löschen …</button>`; $("reset-btn").onclick = askReset; };
+  row.innerHTML = `<span>Wirklich alle Codes, Stimmen und Ergebnisse löschen?</span><button class="btn danger" id="reset-yes" type="button">Ja, endgültig löschen</button><button class="btn" id="reset-no" type="button">Abbrechen</button>`;
+  $("reset-no").onclick = restore;
+  $("reset-yes").onclick = async () => {
+    $("reset-yes").disabled = true;
+    try {
+      const snap = await db.collection("votes").get();
+      for (const d of snap.docs) await db.doc("votes/" + d.id).delete();
+      for (const p of ["results/current", "config/codes", "admin/codes"]) await db.doc(p).delete();
+      await db.doc("config/main").set({ phase: "setup" });
+      $("calc-out").innerHTML = ""; $("gen-msg").hidden = true; preview = null;
+      row.innerHTML = `<span class="msg ok">Alles gelöscht.</span>`;
+      setTimeout(restore, 2500);
+    } catch (e) { row.innerHTML = `<span class="msg bad">Löschen fehlgeschlagen: ${esc(e.message || e.code)}</span>`; setTimeout(restore, 4000); }
+  };
+}
+$("reset-btn").onclick = askReset;
+
+/* ---------- Start ---------- */
+async function start() {
+  inViewer = !!(window.claude && typeof window.claude.use === "function");
+  if (!inViewer) {
+    $("conn").className = "msg info";
+    $("conn").innerHTML = "Diese Datei läuft lokal ohne gemeinsame Datenbank. Abstimmen geht nur in der veröffentlichten Version. Hier können Sie Code-Zettel erzeugen und gesammelte Stimmen auswerten.";
+    $("footnote").hidden = true;
+    setTabs([["file", "Auswertung aus Datei"]]);
+    return;
+  }
+  const [d, u, dw] = await Promise.all([claude.use("db"), claude.use("user"), claude.use("downloads")]);
+  db = d; user = u; dl = dw;
+  if (!db) {
+    $("conn").className = "msg warn";
+    $("conn").innerHTML = "Die Abstimmung ist in dieser Ansicht nicht erreichbar. Melden Sie sich bei claude.ai an und öffnen Sie den geteilten Link erneut. Die Auswertung aus Datei funktioniert trotzdem.";
+    $("footnote").hidden = true;
+    setTabs([["file", "Auswertung aus Datei"]]);
+    return;
+  }
+  isAdmin = user ? await user.canEdit() : false;
+  $("conn").hidden = true;
+  setTabs([["vote", "Abstimmen"], ["result", "Mein Ergebnis"], ...(isAdmin ? [["admin", "Verwaltung"], ["file", "Auswertung aus Datei"]] : [])]);
+  const onErr = (e) => { if (e && e.code === "revoked") { show($("conn"), "Der Zugriff auf die Abstimmung wurde beendet.", "warn"); } };
+  db.doc("config/main").onSnapshot((s) => { phase = (s.exists && s.data().phase) || "setup"; renderPhase(); }, onErr);
+  db.doc("config/codes").onSnapshot((s) => { validHashes = new Set((s.exists && s.data().hashes) || []); renderPhase(); }, onErr);
+  db.doc("results/current").onSnapshot((s) => { published = s.exists ? s.data() : null; renderPublicStats(); }, onErr);
+  if (isAdmin) {
+    db.doc("admin/codes").onSnapshot((s) => { adminCodes = ((s.exists && s.data().list) || []).slice(); renderAdmin(); }, onErr);
+    db.collection("votes").onSnapshot((s) => { votes = new Map(s.docs.map((x) => [x.id, x.data()])); renderAdmin(); }, onErr);
+  }
+  renderPhase();
+}
+start();
+</script>
