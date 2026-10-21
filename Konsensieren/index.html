@@ -114,7 +114,7 @@ td.hit { font-weight: 700; }
 tr:last-child td { border-bottom: 0; }
 
 .bars { display: grid; gap: 8px; }
-.bar { display: grid; grid-template-columns: 7.5em 1fr auto; gap: 10px; align-items: center; font-size: .9rem; }
+.bar { display: grid; grid-template-columns: 8.5em 1fr auto; gap: 10px; align-items: center; font-size: .9rem; }
 .bar .track { height: 10px; background: var(--bg); border-radius: 5px; overflow: hidden; border: 1px solid var(--line); }
 .bar .fill { height: 100%; background: var(--accent); }
 .bar .n { font-family: var(--font-mono); color: var(--muted); }
@@ -128,7 +128,7 @@ ol.steps { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; max-width: 7
 details summary { cursor: pointer; font-weight: 600; }
 @media (max-width: 520px) {
   .seg label { height: 34px; font-size: .8rem; }
-  .bar { grid-template-columns: 6em 1fr auto; }
+  .bar { grid-template-columns: 7em 1fr auto; }
 }
 @media (prefers-reduced-motion: no-preference) { .fill { transition: width .4s ease; } }
 </style>
@@ -258,7 +258,7 @@ details summary { cursor: pointer; font-weight: 600; }
     <div class="panel">
       <h2>Auswertung aus Datei</h2>
       <p class="hint">Für Stimmen, die Sie anders gesammelt haben, zum Beispiel mit Microsoft Forms. Exportieren Sie die Antworten nach Excel und kopieren Sie die Spalten <b>Code</b> und die fünf Namen samt Kopfzeile hier hinein, oder laden Sie eine CSV-Datei.</p>
-      <textarea id="file-text" spellcheck="false" placeholder="Code;Rupprecht;Schön;Glaser;Ohland;Ertel&#10;K7QM-2XHD;0;3;8;2;5"></textarea>
+      <textarea id="file-text" spellcheck="false" placeholder="Code;A. Rupprecht;Ch. Schön;J. Glaser;E. Ohland;Unbekannt&#10;K7QM-2XHD;0;3;8;2;5"></textarea>
       <div class="row">
         <input id="file-input" type="file" accept=".csv,.txt,text/csv,text/plain" aria-label="CSV-Datei laden">
         <button class="btn" id="file-sample" type="button">Beispieldaten laden</button>
@@ -290,7 +290,7 @@ details summary { cursor: pointer; font-weight: 600; }
         <summary>So richten Sie Microsoft Forms dafür ein</summary>
         <ol class="steps hint" style="margin-top: 8px">
           <li>Frage 1: Text „Ihr Code“ (Pflicht).</li>
-          <li>Fragen 2–6: je eine Bewertung oder Zahl 0–10 für Rupprecht, Schön, Glaser, Ohland, Ertel (Pflicht).</li>
+          <li>Fragen 2–6: je eine Bewertung oder Zahl 0–10 für A. Rupprecht, Ch. Schön, J. Glaser, E. Ohland und Unbekannt (Pflicht).</li>
           <li>Einstellungen: „Nur Personen in meiner Organisation“, „Namen aufzeichnen“ <b>aus</b>, „Eine Antwort pro Person“ <b>an</b>.</li>
           <li>Nach Ende: Antworten in Excel öffnen, Spalten Code und die fünf Namen hier einfügen.</li>
         </ol>
@@ -303,7 +303,7 @@ details summary { cursor: pointer; font-weight: 600; }
 
 <script>
 "use strict";
-const PERSONS = ["Rupprecht", "Schön", "Glaser", "Ohland", "Ertel"];
+const PERSONS = ["A. Rupprecht", "Ch. Schön", "J. Glaser", "E. Ohland", "Unbekannt"];
 const SALT = "team-konsensieren-v1|";
 const ALPH = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // ohne I, O, 0, 1
 const PHASE_LABEL = { setup: "Vorbereitung", open: "Abstimmung läuft", closed: "Abstimmung beendet", published: "Ergebnis veröffentlicht" };
@@ -523,7 +523,9 @@ function readEntries(text) {
   const { header, rows } = parseTable(text);
   if (!header) throw new Error("Keine Daten gefunden.");
   const fh = header.map(fold);
-  const pcol = PERSONS.map((p) => fh.findIndex((h) => h.includes(fold(p))));
+  // Spalten werden am Nachnamen erkannt, „Rupprecht“ passt also ebenso wie „A. Rupprecht“
+  const matchKey = (p) => fold(p).split(/[\s.]+/).filter(Boolean).pop();
+  const pcol = PERSONS.map((p) => fh.findIndex((h) => h.includes(matchKey(p))));
   const missing = PERSONS.filter((p, i) => pcol[i] < 0);
   if (missing.length) throw new Error("Spalte(n) nicht gefunden: " + missing.join(", ") + ". Die Kopfzeile muss die fünf Namen enthalten.");
   const ccol = fh.findIndex((h) => /code|kennung|pseudonym|kennwort/.test(h));

@@ -22,7 +22,7 @@ Für diese Testdaten ist das richtige Ergebnis vorab bekannt.
 2. Kopieren Sie diese Tabelle in das Textfeld:
 
    ```
-   Code;Rupprecht;Schön;Glaser;Ohland;Ertel
+   Code;A. Rupprecht;Ch. Schön;J. Glaser;E. Ohland;Unbekannt
    TEST-0001;1;6;0;8;9
    TEST-0002;2;7;0;9;8
    TEST-0003;7;1;0;8;6
@@ -37,17 +37,17 @@ Für diese Testdaten ist das richtige Ergebnis vorab bekannt.
 
 3. Klicken Sie auf **„Zuordnung berechnen“**.
 
-**Erwartetes Ergebnis.** Alle zehn wollen am liebsten zu Glaser (Widerstand 0). Wegen der gleichmäßigen Verteilung bekommt aber jede Person genau 2:
+**Erwartetes Ergebnis.** Alle zehn wollen am liebsten zu J. Glaser (Widerstand 0). Wegen der gleichmäßigen Verteilung bekommt aber jede Person genau 2:
 
 | Person | Codes |
 |---|---|
-| Rupprecht | TEST-0001, TEST-0002 |
-| Schön | TEST-0003, TEST-0004 |
-| Glaser | TEST-0009, TEST-0010 |
-| Ohland | TEST-0005, TEST-0006 |
-| Ertel | TEST-0007, TEST-0008 |
+| A. Rupprecht | TEST-0001, TEST-0002 |
+| Ch. Schön | TEST-0003, TEST-0004 |
+| J. Glaser | TEST-0009, TEST-0010 |
+| E. Ohland | TEST-0005, TEST-0006 |
+| Unbekannt | TEST-0007, TEST-0008 |
 
-Glaser bekommt die beiden, die bei allen anderen den höchsten Widerstand haben. Alle anderen landen bei ihrer zweitliebsten Person. Das Ergebnis muss in beiden Verfahren gleich sein: Ø Widerstand 1.20, höchster Wert 2.
+J. Glaser bekommt die beiden, die bei allen anderen den höchsten Widerstand haben. Alle anderen landen bei ihrer zweitliebsten Person. Das Ergebnis muss in beiden Verfahren gleich sein: Ø Widerstand 1.20, höchster Wert 2.
 
 - [ ] Ergebnis stimmt mit der Tabelle überein
 - [ ] Unter „Verfahren“ auf „Klassisch“ umstellen und neu berechnen: gleiches Ergebnis

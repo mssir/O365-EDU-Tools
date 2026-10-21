@@ -1,6 +1,6 @@
 # Team-Konsensieren
 
-Anonyme Zuordnung von Mitarbeitenden zu fünf Personen (Rupprecht, Schön, Glaser, Ohland, Ertel) per **systemischem Konsensieren**.
+Anonyme Zuordnung von Mitarbeitenden zu fünf Personen (A. Rupprecht, Ch. Schön, J. Glaser, E. Ohland, Unbekannt) per **systemischem Konsensieren**.
 
 Jede teilnehmende Person gibt für jede der fünf Personen ihren **Widerstand** von 0 (passt gut) bis 10 (auf keinen Fall) an. Die Auswertung ordnet anschließend alle automatisch so zu, dass möglichst wenig Widerstand entsteht und jede Person gleich viele Mitarbeitende bekommt (höchstens eine Person Unterschied).
 
